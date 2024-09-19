@@ -13,14 +13,14 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Parse incoming JSON requests
 
-// Serve static files (images)
+// Serve static files (like images) from the uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 
-// Handle 404 for any other routes
+// Handle 404 for any unknown routes
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Route not found' });
 });
@@ -31,4 +31,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
+// Root route
+app.get('/', (req, res) => {
+    res.send('API is running...');
+});
+
+// Exporting app for serverless or other environments
 module.exports = app;
