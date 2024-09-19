@@ -11,13 +11,24 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // To parse JSON request bodies
+app.use(express.json()); // Parse incoming JSON requests
 
-// Serve images statically
+// Serve static files (images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+
+// Handle 404 for any other routes
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal server error' });
+});
 
 module.exports = app;
