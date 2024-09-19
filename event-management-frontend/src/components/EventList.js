@@ -80,8 +80,17 @@ const EventList = () => {
                                 {user && (
                                     <Button
                                         variant="contained"
-                                        color="success"
-                                        sx={{ mt: 2, ml: 2 }}
+                                        sx={{
+                                            mt: 2,
+                                            ml: 0, 
+                                            backgroundColor: '#28a745', 
+                                            color: '#fff', 
+                                            '&:hover': {
+                                                backgroundColor: '#218838',
+                                            },
+                                            padding: '8px 16px',
+                                            fontSize: '0.875rem',
+                                        }}
                                         onClick={() => handleRSVP(event._id)}
                                         disabled={event.attendees.length >= event.maxAttendees}
                                     >
