@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base URL for your backend server (adjust according to your setup)
 const api = axios.create({
-    baseURL: 'https://swiftrut-task-4-event.vercel.app/api',
+    baseURL: 'http://localhost:5000/api',
 });
 
 api.interceptors.request.use((config) => {

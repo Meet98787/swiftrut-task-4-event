@@ -5,7 +5,7 @@ const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const path = require('path');
 
-dotenv.config();
+dotenv.config();  // Load environment variables from .env
 
 const app = express();
 
@@ -18,17 +18,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
+app.use('/api/events', (req, res, next) => {
+    req.io = req.app.get('socketio');  // Pass the io instance from server.js
+    next();
+}, eventRoutes);
 
 // Handle 404 for any unknown routes
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error' });
+    console.error(err.stack);
+    res.status(500).json({ message: 'Internal server error' });
 });
 
 // Root route

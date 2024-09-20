@@ -62,11 +62,21 @@ router.post('/create', verifyToken, upload.single('image'), async (req, res) => 
 
 // Get all events
 router.get('/', async (req, res) => {
+    const { startDate, endDate, location } = req.query;
+
+    let filters = {};
+    if (startDate && endDate) {
+        filters.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+    if (location) {
+        filters.location = { $regex: location, $options: 'i' }; // Case-insensitive matching
+    }
+
     try {
-        const events = await Event.find().populate('creator', 'username email');
+        const events = await Event.find(filters);
         res.json(events);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching events' });
     }
 });
 
@@ -88,18 +98,19 @@ router.put('/:id', verifyToken, async (req, res) => {
         const event = await Event.findById(req.params.id);
         if (!event) return res.status(404).json({ error: 'Event not found' });
 
+        // Only the event creator can update the event
         if (event.creator.toString() !== req.userId) {
             return res.status(403).json({ error: 'Not authorized' });
         }
 
-        // Check if the new maxAttendees is less than the current number of attendees
+        // Validation for maxAttendees
         if (maxAttendees < event.attendees.length) {
             return res.status(400).json({
-                error: `Cannot set max attendees to less than the current number of attendees (${event.attendees.length}).`
+                error: `Cannot set max attendees to less than current attendees (${event.attendees.length})`,
             });
         }
 
-        // Proceed with updating the event if all validations pass
+        // Update the event
         event.title = title;
         event.description = description;
         event.date = date;
@@ -107,6 +118,14 @@ router.put('/:id', verifyToken, async (req, res) => {
         event.maxAttendees = maxAttendees;
 
         await event.save();
+
+        // Notify attendees using Socket.IO
+        req.io.emit('eventUpdated', {
+            eventId: event._id,
+            title: event.title,
+            message: `The event "${event.title}" has been updated.`,
+        });
+
         res.json(event);
     } catch (err) {
         res.status(400).json({ error: err.message });
