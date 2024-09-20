@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import api from '../api';
+import { Navigate } from 'react-router-dom';
 
 const CreateEvent = () => {
     const [title, setTitle] = useState('');
@@ -29,6 +30,7 @@ const CreateEvent = () => {
                     'Authorization': `Bearer ${token}` // Attach the token to the request
                 },
             });
+            Navigate('/my-events')
             console.log('Event created:', data);
         } catch (error) {
             const message = error.response ? error.response.data.error : error.message;
